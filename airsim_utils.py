@@ -3,10 +3,10 @@ import math
 import numpy as np
 import cv2
 class AirSimEnv():
-    
+
     def __init__(self):
         self.client = airsim.MultirotorClient()
-    
+
     def connectQuadrotor(self) -> None:
         self.client.confirmConnection()
 
@@ -26,7 +26,7 @@ class AirSimEnv():
         self.client.hoverAsync().join()
 
     def hasCollided(self):
-        return 
+        return self.client.simGetCollisionInfo.has_collided #todo return
 
     def getRGBImage(self) -> np.ndarray:
         # retrieve single RGB image from the camera
@@ -39,7 +39,7 @@ class AirSimEnv():
         return img_rgb
 
     def getDepthImage(self):
-        
+
         response = self.client.simGetImages([airsim.ImageRequest(0, airsim.ImageType.DepthVis, True)])[0]
 
         dp1d = np.array(response.image_data_float, dtype=np.float32)
@@ -47,10 +47,10 @@ class AirSimEnv():
         img_depth = np.array(np.abs(1-dp) * 255, dtype=np.uint8)
 
         return img_depth
- 
+
     def saveImage(self, filename: str, image: np.ndarray) -> None:
         cv2.imwrite(filename, image)
-        
+
     def angularRatesToLinearVelocity(self, pitch, roll, yaw, throttle, sc) -> tuple:
         vx = sc / 1.5 * pitch #1
         vy = sc / 1.5 * roll #0
@@ -103,7 +103,7 @@ class AirSimEnv():
         yaw = math.atan2(t3, t4)
 
         return (pitch, roll, yaw)
-    
+
     def teleportRelativeQuadrotor(self, x, y, z, yaw):
         pose = self.client.simGetVehiclePose()
         pose.position.x_val += x

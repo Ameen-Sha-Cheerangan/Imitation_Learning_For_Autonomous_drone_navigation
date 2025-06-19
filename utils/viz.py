@@ -28,5 +28,5 @@ for i in idx:
    plt.imshow(ghmap[i])
    plt.savefig(f'gh_{i}.png', transparent=True, bbox_inches='tight')
    #print(ghmap[i].shape)
-   #plt.imsave(f'gh_{i}.png', ghmap[i], cmap="hot") 
+   #plt.imsave(f'gh_{i}.png', ghmap[i], cmap="hot")
    #cv2.imwrite(f'gh_{i}.png', ghmap[i]*255)

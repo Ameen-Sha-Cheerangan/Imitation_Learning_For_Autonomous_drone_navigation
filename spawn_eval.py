@@ -8,6 +8,8 @@ from agil_airsim import arilNN
 import math
 import timeit
 from losses import action_loss
+import os
+os.environ["CUDA_VISIBLE_DEVICES"] = "-1"  # Force CPU inference
 
 # connect to AirSim client
 client = airsim.MultirotorClient()
@@ -15,10 +17,10 @@ client.confirmConnection()
 client.enableApiControl(True)
 client.simEnableWeather(True)
 
-#client.simSetWeatherParameter(airsim.WeatherParameter.Rain, 1.0);
-#client.simSetWeatherParameter(airsim.WeatherParameter.Snow, 1.0);
-#client.simSetWeatherParameter(airsim.WeatherParameter.MapleLeaf, 1.0);
-#client.simSetWeatherParameter(airsim.WeatherParameter.Dust, 0.25);
+# client.simSetWeatherParameter(airsim.WeatherParameter.Rain, 1.0);
+# client.simSetWeatherParameter(airsim.WeatherParameter.Snow, 1.0);
+# client.simSetWeatherParameter(airsim.WeatherParameter.MapleLeaf, 1.0);
+# client.simSetWeatherParameter(airsim.WeatherParameter.Dust, 0.25);
 client.simSetWeatherParameter(airsim.WeatherParameter.Fog, 0.25)
 
 
@@ -55,7 +57,7 @@ def _toEulerianAngle(q):
 
 
 
-aril_model = "gril.h5"
+aril_model = "gil.h5"  #todo Changed from "gril.h5" to "gil.h5"
 
 aril = tf.keras.models.load_model(aril_model, custom_objects=customObjects)
 
@@ -76,25 +78,25 @@ while(True):
     sc = 10
     duration = 1e-0
     done = False
-    
+
     # teleportation/spawning functions for QUADROTOR
     pose = client.simGetVehiclePose()
-    #pose.position.x_val -= 25
-    #pose.position.y_val += 25
-    #pose.position.z_val = -4
+    # pose.position.x_val -= 25
+    # pose.position.y_val += 25
+    # pose.position.z_val = -4
 
     client.simSetVehiclePose(pose, True, "SimpleFlight")
 
     # # teleportation/spawning functions for YELLOW TRUCK
-    # target_name = 'Truck_4'
-    # target_pose = client.simGetObjectPose(target_name)
-    # target_pose.position.x_val -= 20 
-    # target_pose.position.y_val -= 10
-    # # target_pose.position.z_val
-    # client.simSetObjectPose(target_name, target_pose, teleport = True)
-  
+    target_name = 'Truck_4'
+    target_pose = client.simGetObjectPose(target_name)
+    target_pose.position.x_val -= 20
+    # target_pose.position.y_val += 10
+    # target_pose.position.z_val
+    client.simSetObjectPose(target_name, target_pose, teleport = True)
+
     while(not done):
-        
+
         # getting quad states
         state = client.getMultirotorState()
 
@@ -112,36 +114,36 @@ while(True):
         # convert from bgr to rgb
         # img_rgb = np.fliplr(img_rgb.reshape(-1,3)).reshape(img_rgb.shape)
 
-        
+
         # reshape to 3-channel image (for Unreal 4.25)
         dp1d = np.array(kairos_depth.image_data_float, dtype=np.float32)
         dp = dp1d.reshape(kairos_depth.height, kairos_depth.width)
         img_depth = np.array(np.abs(1-dp) * 255, dtype=np.uint8)
-        
-        
-        
+
+
+
         # for Unreal 4.18
         # The binaries from Vinicius' repo
         # img = img_rgb[:,:,0:3]
-        
+
         # for Unreal 4.25
-        
+
         # Print resized color image of the current frame
         #cv2.imwrite('out{}.png'.format(img_counter), cv2.resize(img_rgb, (224, 224)))
         #cv2.imwrite('dp{}.png'.format(img_counter), cv2.resize(img_depth, (224, 224)))
-        
+
         # AGIL network predictions
         # roll, pitch, throttle, yaw
         # output = arilNN(img_rgb, dp, aril)
-        output = arilNN(img_rgb, img_depth, aril)
+        commands, gaze = arilNN(img_rgb, img_depth, aril)
         # output = agilNN(gaze, agil, img)
-        act_roll     = float(output[:,0]) 
-        act_pitch    = float(output[:,1]) 
+        act_roll     = float(commands[:,0])
+        act_pitch    = float(commands[:,1])
         #throttle = abs(float(output[:,2]))
 
         # act_throttle = (float(output[:,2]) + 1.0)/2.0 + .15
-        act_throttle = float(output[:,2])
-        act_yaw      = float(output[:,3])           
+        act_throttle = float(commands[:,2])
+        act_yaw      = float(commands[:,3])
         # print(roll, pitch, throttle, yaw)
 
         vx = sc / 1.5 * act_pitch #1
@@ -171,12 +173,14 @@ while(True):
             airsim.DrivetrainType.MaxDegreeOfFreedom,
             airsim.YawMode(True, vz),
         )
-             
+
         # definition of episode completion (for now, I just wrote hacky done condition that ends each episode after two minutes)
         #if(time.time() > time.time() + 60*2):
         #    done = True
-    
+
         img_counter = img_counter + 1
     # resets at the end of the episode
-    
+
     client.reset()
+
+

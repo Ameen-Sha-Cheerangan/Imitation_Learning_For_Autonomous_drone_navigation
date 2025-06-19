@@ -13,7 +13,7 @@ def read_npz(data_path):
         train_gaze = np.reshape(data['heatmap'], (l, 224, 224, 1))
         #print(train_gaze.shape)
         # train_act = data['vel_comm']
-     #    print(train_act.shape)
+    #    print(train_act.shape)
         return train_imgs.shape, train_gaze.shape
 
 

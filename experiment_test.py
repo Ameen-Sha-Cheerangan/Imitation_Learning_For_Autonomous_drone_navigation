@@ -8,6 +8,7 @@ from agil_airsim import arilNN
 import math
 import timeit
 import argparse
+os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 
 from losses import action_loss
 from airsim_utils import AirSimEnv
@@ -16,7 +17,8 @@ customObjects = {
     'action_loss': action_loss
 }
 
-aril_model = "gril.h5"
+
+aril_model = "gil.h5"
 aril = tf.keras.models.load_model(aril_model, custom_objects=customObjects)
 
 env = AirSimEnv()
@@ -48,12 +50,12 @@ for i in range(EPISODES):
     done = False
     while not done:
 
-        img_rgb, img_depth =  env.getRGBImage(), env.getRGBDepthImage()
-        output = arilNN(img_rgb, img_depth, aril)
-        roll     = float(output[:,0]) 
-        pitch    = float(output[:,1]) 
-        throttle = float(output[:,2])
-        yaw      = float(output[:,3])      
+        img_rgb, img_depth =  env.getRGBImage(), env.getDepthImage()
+        commands,gaze = arilNN(img_rgb, img_depth, aril)
+        roll     = float(commands[:,0])
+        pitch    = float(commands[:,1])
+        throttle = float(commands[:,2])
+        yaw      = float(commands[:,3])
         vx, vy, vz, ref_alt = env.angularRatesToLinearVelocity(pitch, roll, yaw, throttle, SC)
         vb = env.inertialToBodyFrame(yaw, vx, vy)
         env.controlQuadrotor(vb, vz, ref_alt, DURATION)

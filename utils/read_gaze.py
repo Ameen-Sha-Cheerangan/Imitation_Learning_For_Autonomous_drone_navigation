@@ -42,7 +42,7 @@ def reshape_heatmap(heatmap):
     for i in range(len(heatmap)):
         ghmap.append(cv2.resize(
             heatmap[i], (224, 224), interpolation=cv2.INTER_AREA))
-    
+
     return np.array(ghmap)
 
 
@@ -59,11 +59,11 @@ def get_mask(center, size, sig):
 
 
 h = 224 # 480  # row
-w = 224 #704  # column
+w = 224 # 704  # column
 
 
 def preprocess_gaze_heatmap(gaze_2ds, sigma):
-    ''' Convert 1-hot gaze heatmap to gaussian distribution; 
+    ''' Convert 1-hot gaze heatmap to gaussian distribution;
     note that this assumes each frame only has 0 or 1 valid gaze positions'''
     gmaps = np.zeros([len(gaze_2ds), h, w, 1], dtype=np.float32)
     dim_x, dim_y = h, w  # gmaps.shape[1], gmaps.shape[2]

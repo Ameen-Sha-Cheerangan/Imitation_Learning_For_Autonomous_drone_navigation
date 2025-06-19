@@ -31,10 +31,10 @@ def generate_gril(path, file_list):
             #file_npz = file_list[i*1:(i+1)*1]
 
             print(file_npz)
-            
+
             file_npz = b" ".join(file_npz)
             #file_npz = " ".join(file_npz)
-   
+
             imgs, depth, acts, gaze = read_npz(os.path.join(path, file_npz))
             #X, y = read_npz(file_npz)
             #print(img.dtype, gaze.dtype)
@@ -42,7 +42,7 @@ def generate_gril(path, file_list):
 
                 #yield {"input_1":img, "input_2":gaze}, act
                 yield {"image": imgs[idx], "depth": depth[idx]}, {"action":acts[idx], "gaze":gaze[idx]}
-                
+
 
 def generate_il_cgl(path, file_list):
     # Generate batches of samples
@@ -62,13 +62,12 @@ def generate_il_cgl(path, file_list):
             #X, y = read_npz(file_npz)
             #print(img.dtype, gaze.dtype)
             for idx in range(0, len(depth)):
-                
+
                 #image = cv2.cvtColor(imgs[idx], cv2.COLOR_BGR2GRAY)
                 #print(gaze[idx].shape)
-                gaze_reshaped = cv2.resize(gaze[idx], (28, 28), interpolation=cv2.INTER_AREA) 
+                gaze_reshaped = cv2.resize(gaze[idx], (28, 28), interpolation=cv2.INTER_AREA)
                 #yield {"input_1":img, "input_2":gaze}, act
                 yield {"image": imgs[idx]},  {"gaze":gaze_reshaped, "action":acts[idx]}
-
 
 
 

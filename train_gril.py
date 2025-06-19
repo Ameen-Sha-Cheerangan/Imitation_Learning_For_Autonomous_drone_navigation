@@ -2,8 +2,11 @@ import tensorflow as tf
 import numpy as np
 import os
 import random
-from models import gril, my_kld, my_softmax
-from batch_loader import generate_aril
+from models import gril
+from losses import my_kld, my_softmax
+from batch_loader import generate_gril
+import os
+os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 
 
 def action_loss(y_true, y_pred):
@@ -23,12 +26,12 @@ def action_loss(y_true, y_pred):
 
     return tf.reduce_mean(weighted_squared_difference, axis=-1)
 
+
 #64
-batch_size = 32
-train_datapath = "/scratch/user/ravikt/airsim/data/dataset_cvpr/raw_flipped/train/"
-val_datapath =  "/scratch/user/ravikt/airsim/data/dataset_cvpr/raw_flipped/val/"
- 
- 
+batch_size = 32 #todo:: this was 16 earlier - different from noufan
+train_datapath = "/home/ameen/Desktop/Drone_Project-Mtech_Thesis/Code/training_data"
+val_datapath =  "/home/ameen/Desktop/Drone_Project-Mtech_Thesis/Code/validation_data"
+
 
 file_list = os.listdir(train_datapath)
 val_list = os.listdir(val_datapath)
@@ -44,16 +47,12 @@ my_callbacks = [
     tf.keras.callbacks.CSVLogger('gil.log')
 ]
 
-    
-tfx = tf.data.Dataset.from_generator(generate_aril, args=[train_datapath, file_list], 
-                                     output_types = ({"image":tf.float32, 
-                                     "depth":tf.float32}, {"action":tf.float64, "gaze":tf.float64}))
 
-val = tf.data.Dataset.from_generator(generate_aril, args=[val_datapath, val_list], 
-                                     output_types = ({"image":tf.float32, 
-                                     "depth":tf.float32}, {"action":tf.float64, "gaze":tf.float64}))
+tfx = tf.data.Dataset.from_generator(generate_gril, args=[train_datapath, file_list],output_types = ({"image":tf.float32,"depth":tf.float32}, {"action":tf.float64, "gaze":tf.float64}))
 
- 
+val = tf.data.Dataset.from_generator(generate_gril, args=[val_datapath, val_list],output_types = ({"image":tf.float32,"depth":tf.float32}, {"action":tf.float64, "gaze":tf.float64}))
+
+
 
 
 tfx = tfx.batch(batch_size)
@@ -72,4 +71,3 @@ model.compile(loss=[action_loss, 'mean_squared_error'], optimizer=opt)
 model.fit(tfx, epochs=30, validation_data=val, validation_steps=val_steps, callbacks = my_callbacks)
 
 model.save('gil.h5')
-

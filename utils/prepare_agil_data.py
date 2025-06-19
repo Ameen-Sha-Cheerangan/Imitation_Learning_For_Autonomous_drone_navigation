@@ -12,21 +12,21 @@ def get_im_index(filename):
 
 def prepare_data(data_path):
     for subdir in os.listdir(data_path):
-       print(subdir)
-       fname = ["rgb", "log.csv"]
-       dirname = os.path.join(data_path, subdir)
-       print(dirname)
+        print(subdir)
+        fname = ["rgb", "log.csv"]
+        dirname = os.path.join(data_path, subdir)
+        print(dirname)
 
-       imgs = []
-       gaze_pos = []
-       act_lbls = []
-        # img_idx=[]
-        # print(os.path.join(dirname, fname)
-       if fname[1].endswith('.csv'):
-          log = fname[1]
-       csv_path = os.path.join(dirname, log)
-       print(csv_path)
-       with open(csv_path, 'r') as csvfile:
+        imgs = []
+        gaze_pos = []
+        act_lbls = []
+            # img_idx=[]
+            # print(os.path.join(dirname, fname)
+        if fname[1].endswith('.csv'):
+            log = fname[1]
+        csv_path = os.path.join(dirname, log)
+        print(csv_path)
+        with open(csv_path, 'r') as csvfile:
             gaze = csv.reader(csvfile)
             next(gaze)  # skip the head row
             for i, row in enumerate(gaze):
@@ -58,12 +58,12 @@ def prepare_data(data_path):
             print(hmap.shape)
             print(imgs.shape)
             print(act_lbls.shape)
-            hmap = np.reshape(hmap, (hmap.shape[0], hmap.shape[1], hmap.shape[2], 1))  
-            imgs = np.reshape(imgs, (imgs.shape[0], imgs.shape[1], imgs.shape[2], 1)) 
+            hmap = np.reshape(hmap, (hmap.shape[0], hmap.shape[1], hmap.shape[2], 1))
+            imgs = np.reshape(imgs, (imgs.shape[0], imgs.shape[1], imgs.shape[2], 1))
             act_lbls = np.reshape(act_lbls, (act_lbls.shape[0], act_lbls.shape[1], 1))
-       npz_name = data_path.split("/")[-2]
-       print(npz_name)
-       np.savez_compressed(f"{npz_name}.npz", images=imgs, heatmap=hmap, vel_comm=act_lbls)
+        npz_name = data_path.split("/")[-2]
+        print(npz_name)
+        np.savez_compressed(f"{npz_name}.npz", images=imgs, heatmap=hmap, vel_comm=act_lbls)
 
 
 if __name__ == "__main__":
@@ -74,4 +74,4 @@ if __name__ == "__main__":
     args = parser.parse_args()
     data_path = args.path
     prepare_data(data_path)
-                             
+

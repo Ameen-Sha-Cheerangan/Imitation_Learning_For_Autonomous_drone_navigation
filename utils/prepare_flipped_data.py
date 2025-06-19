@@ -29,7 +29,7 @@ def reshape_image(image):
     width = 224
     height = 224
     frame = cv2.resize(image, (width, height), interpolation=cv2.INTER_AREA)
-    
+
     return frame / 255.0
 
 
@@ -47,27 +47,27 @@ def prepare_data(data_path):
         # img_idx=[]
         # print(os.path.join(dirname, fname)
         if fname[1].endswith('.csv'):
-           log = fname[1]
+            log = fname[1]
         csv_path = os.path.join(dirname, log)
         print(csv_path)
         train_df = pd.read_csv(csv_path)
         train_df["rgb_addr"]  = train_df["rgb_addr"].apply(lambda x: x.split("/")[-1])
         train_df["depth_addr"]= train_df["depth_addr"].apply(lambda x: x.split("/")[-1])
-        
+
         non_zero_yaw = train_df[train_df["act_yaw"] != 0.0]
         zero_yaw = train_df.query("act_yaw == 0.0").sample(frac=0.10)
         final_df = pd.concat([zero_yaw, non_zero_yaw])
 
         for i, data in final_df.iterrows():
             img_path   = os.path.join(dirname, "rgb", data["rgb_addr"])
-            depth_path = os.path.join(dirname, "depth", data["depth_addr"])                
+            depth_path = os.path.join(dirname, "depth", data["depth_addr"])
             # print(img_path)
             # if (os.path.exists(img_path) and float(row[-4])==0.0):
             print(data["rgb_addr"], data["gaze_x"], data["gaze_y"])
 
-            # flip the image horizontally 
+            # flip the image horizontally
             im_flip = np.float32(cv2.flip(cv2.imread(img_path), 1))
-            im_flip = reshape_image(im_flip)  
+            im_flip = reshape_image(im_flip)
             imgs_flip.append(im_flip)
 
             # flip the depth image horizontally
@@ -78,7 +78,7 @@ def prepare_data(data_path):
             # gaze cordinates flipped
             coords_flip = np.hstack((1.0-data["gaze_x"], data["gaze_y"]))
             gaze_pos_flip.append(coords_flip)
-            
+
             # control commands fized
             act_commands_flip = np.hstack((-1.0*data["act_roll"], data["act_pitch"], data["act_throttle"], -1.0*data["act_yaw"]))
             act_lbls_flip.append(act_commands_flip)
@@ -93,7 +93,7 @@ def prepare_data(data_path):
         depth_flip = np.array(depth_flip)
         #print(imgs.shape)
 
-    
+
         print(depth_flip.shape)
         print(imgs_flip.shape)
         print(gaze_pos_flip.shape)
@@ -116,5 +116,3 @@ if __name__ == "__main__":
     args = parser.parse_args()
     data_path = args.path
     prepare_data(data_path)
-                             
-

@@ -4,3 +4,10 @@ __pychache__/
 *.hdf5
 *.npz
 /datasets
+more \accurate/
+__pycache__/
+all_extension_files.txt
+*.h5
+*.log
+merge_all_file_contents*.py
+
